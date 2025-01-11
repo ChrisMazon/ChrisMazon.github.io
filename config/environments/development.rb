@@ -1,24 +1,15 @@
 Rails.application.configure do
+  # Allow all hosts (useful for cloud environments like Gitpod)
   config.hosts.clear
-  path = Rails.root.join("whitelist.yml")
-  default_whitelist_path = Rails.root.join("default_whitelist.yml")
-  whitelisted_ips = []
 
-  if File.exist?(path)
-    whitelisted_ips = YAML.load_file(path)
+  # Allow IPs for BetterErrors (only if the gem is present)
+  if defined?(BetterErrors)
+    BetterErrors::Middleware.allow_ip! '0.0.0.0/0'
   end
 
-  if File.exist?(default_whitelist_path)
-    whitelisted_ips = whitelisted_ips.concat(YAML.load_file(default_whitelist_path))
-  end
-
-  config.web_console.permissions = whitelisted_ips
-  config.web_console.whiny_requests = false
-
-  config.web_console.whitelisted_ips = '0.0.0.0/0.0.0.0'
-  BetterErrors::Middleware.allow_ip! '0.0.0.0/0.0.0.0'
-
+  # Set default URL options for Action Mailer in development
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # In the development environment your application's code is reloaded on
@@ -36,15 +27,12 @@ Rails.application.configure do
   # Run rails dev:cache to toggle caching.
   if Rails.root.join('tmp', 'caching-dev.txt').exist?
     config.action_controller.perform_caching = true
-    config.action_controller.enable_fragment_cache_logging = true
-
     config.cache_store = :memory_store
     config.public_file_server.headers = {
       'Cache-Control' => "public, max-age=#{2.days.to_i}"
     }
   else
     config.action_controller.perform_caching = false
-
     config.cache_store = :null_store
   end
 
@@ -66,9 +54,7 @@ Rails.application.configure do
   config.active_record.verbose_query_logs = true
 
   # Debug mode disables concatenation and preprocessing of assets.
-  # This option may cause significant delays in view rendering with a large
-  # number of complex assets.
-  config.assets.debug = false
+  config.assets.debug = true
 
   # Suppress logger output for asset requests.
   config.assets.quiet = true
